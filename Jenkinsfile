@@ -1,16 +1,17 @@
 pipeline {
 
-    agent { label 'pwcslave1' }
+    agent { label 'slave1' }
 
-	environment {	
-		DOCKERHUB_CREDENTIALS=credentials('dockerloginid')
-	}
+ environment {
+        DOCKER_USER=credentials('DOCKER_USER')
+        DOCKER_PWD=credentials('DOCKER_PWD')
+    }
 	
     stages {
         stage('SCM_Checkout') {
             steps {
                 echo 'Perform SCM Checkout'
-				git 'https://github.com/Edu-TCS-DevOps-Aug21/java-mvn-springbootapp.git'
+				git 'https://github.com/rakesh250190/java-mvn-springbootapp.git'
             }
         }
         stage('Application_Build') {
@@ -22,21 +23,21 @@ pipeline {
         stage('Build Docker Image') {
             steps {
 				sh 'docker version'
-				sh "docker build -t loksaieta/loksai-eta-app:${BUILD_NUMBER} ."
+				sh "docker build -t 250190/springboot-app:${BUILD_NUMBER} ."
 				sh 'docker image list'
-				sh "docker tag loksaieta/loksai-eta-app:${BUILD_NUMBER} loksaieta/loksai-eta-app:latest"
+				sh "docker tag 250190/springboot-app:${BUILD_NUMBER} 250190/springboot-app:latest"
             }
         }
 
 		stage('Login2DockerHub') {
 
 			steps {
-				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+				sh 'echo $DOCKER_USER | docker login -u $DOCKER_PWD --password-stdin'
 			}
 		}
 		stage('Publish_to_Docker_Registry') {
 			steps {
-				sh "docker push loksaieta/loksai-eta-app:latest"
+				sh "docker push 250190/springboot-app:latest"
 			}
 		}
 		stage('Deploy to Kubernetes') {
